@@ -1,5 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of Badcow DNS Server.
+ *
+ * (c) Samuel Williams <sam@badcow.co>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Badcow\DNS\Server;
 
@@ -262,7 +272,7 @@ class Message
     /**
      * @param Question $question
      */
-    public function addQuestion(Question $question)
+    public function addQuestion(Question $question): void
     {
         $this->questions[] = $question;
     }
@@ -270,7 +280,7 @@ class Message
     /**
      * @param Question[] $questions
      */
-    public function setQuestions(array $questions)
+    public function setQuestions(array $questions): void
     {
         $this->questions = [];
         foreach ($questions as $question) {
@@ -289,7 +299,7 @@ class Message
     /**
      * @param ResourceRecord $answer
      */
-    public function addAnswer(ResourceRecord $answer)
+    public function addAnswer(ResourceRecord $answer): void
     {
         $this->answers[] = $answer;
     }
@@ -297,7 +307,7 @@ class Message
     /**
      * @param ResourceRecord[] $answers
      */
-    public function setAnswers(array $answers)
+    public function setAnswers(array $answers): void
     {
         $this->answers = [];
         foreach ($answers as $answer) {
@@ -316,7 +326,7 @@ class Message
     /**
      * @param ResourceRecord $authoritative
      */
-    public function addAuthoritative(ResourceRecord $authoritative)
+    public function addAuthoritative(ResourceRecord $authoritative): void
     {
         $this->authoritatives[] = $authoritative;
     }
@@ -324,7 +334,7 @@ class Message
     /**
      * @param ResourceRecord[] $authoritatives
      */
-    public function setAuthoritatives(array $authoritatives)
+    public function setAuthoritatives(array $authoritatives): void
     {
         $this->authoritatives = [];
         foreach ($authoritatives as $authoritative) {
@@ -343,7 +353,7 @@ class Message
     /**
      * @param ResourceRecord $additional
      */
-    public function addAdditional(ResourceRecord $additional)
+    public function addAdditional(ResourceRecord $additional): void
     {
         $this->additionals[] = $additional;
     }
@@ -351,7 +361,7 @@ class Message
     /**
      * @param ResourceRecord[] $additionals
      */
-    public function setAdditionals(array $additionals)
+    public function setAdditionals(array $additionals): void
     {
         $this->additionals = [];
         foreach ($additionals as $additional) {
@@ -381,6 +391,7 @@ class Message
 
     /**
      * @return string
+     *
      * @throws UnsetValueException
      */
     public function toWire(): string

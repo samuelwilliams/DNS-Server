@@ -1,5 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of Badcow DNS Server.
+ *
+ * (c) Samuel Williams <sam@badcow.co>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Badcow\DNS\Server;
 
@@ -37,9 +47,10 @@ class Question
 
     /**
      * @param string $name
+     *
      * @throws InvalidArgumentException
      */
-    public function setName($name)
+    public function setName($name): void
     {
         if (!Validator::fullyQualifiedDomainName($name)) {
             throw new InvalidArgumentException(sprintf('"%s" is not a fully qualified domain name.', $name));
@@ -51,16 +62,17 @@ class Question
     /**
      * @return int
      */
-    public function getType():int
+    public function getType(): int
     {
         return $this->type;
     }
 
     /**
      * @param string|int $type
+     *
      * @throws UnsupportedTypeException
      */
-    public function setType($type)
+    public function setType($type): void
     {
         if (is_string($type)) {
             $this->type = Types::getTypeCode($type);
@@ -82,7 +94,7 @@ class Question
     /**
      * @param string|int $class
      */
-    public function setClass($class):void
+    public function setClass($class): void
     {
         if (is_string($class)) {
             $this->class = Classes::getClassId($class);
