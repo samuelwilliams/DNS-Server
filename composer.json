@@ -1,0 +1,32 @@
+{
+    "name": "badcow/dns-server",
+    "description": ".",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sam Williams",
+            "email": "sam@badcow.co"
+        }
+    ],
+    "type": "project",
+    "minimum-stability": "dev",
+    "require": {
+        "badcow/dns": "dev-master",
+        "php": ">=7.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~8.4",
+        "friendsofphp/php-cs-fixer": "~2.1",
+        "phpstan/phpstan": "^0.11.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Badcow\\DNS\\Server\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Badcow\\DNS\\Server\\Tests\\": "tests/"
+        }
+    }
+}
