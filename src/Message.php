@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Badcow\DNS\Server;
 
+use Badcow\DNS\Rdata\UnsupportedTypeException;
 use Badcow\DNS\ResourceRecord;
 use Badcow\DNS\UnsetValueException;
 
@@ -396,7 +397,25 @@ class Message
      */
     public function toWire(): string
     {
-        $encoded = $this->encodeHeader();
+        $flags = 0x0 |
+            ($this->isResponse & 0x1) << 15 |
+            ($this->opcode & 0xf) << 11 |
+            ($this->isAuthoritative & 0x1) << 10 |
+            ($this->isTruncated & 0x1) << 9 |
+            ($this->isRecursionDesired & 0x1) << 8 |
+            ($this->isRecursionAvailable & 0x1) << 7 |
+            ($this->z & 0x7) << 4 |
+            ($this->rcode & 0xf);
+
+        $encoded = pack(
+            'nnnnnn',
+            $this->id,
+            $flags,
+            $this->countQuestions(),
+            $this->countAnswers(),
+            $this->countAuthoritatives(),
+            $this->countAdditionals()
+        );
 
         foreach ($this->questions as $question) {
             $encoded .= $question->toWire();
@@ -417,26 +436,51 @@ class Message
         return $encoded;
     }
 
-    private function encodeHeader(): string
+    /**
+     * @param string $encoded
+     *
+     * @return Message
+     *
+     * @throws UnsupportedTypeException
+     */
+    public static function fromWire(string $encoded): Message
     {
-        $flags = 0x0 |
-            ($this->isResponse & 0x1) << 15 |
-            ($this->opcode & 0xf) << 11 |
-            ($this->isAuthoritative & 0x1) << 10 |
-            ($this->isTruncated & 0x1) << 9 |
-            ($this->isRecursionDesired & 0x1) << 8 |
-            ($this->isRecursionAvailable & 0x1) << 7 |
-            ($this->z & 0x7) << 4 |
-            ($this->rcode & 0xf);
+        $message = new self();
+        $offset = 0;
+        $header = unpack('nid/nflags/nqdcount/nancount/nnscount/narcount', $encoded, $offset);
+        $offset += 12;
+        $flags = $header['flags'];
+        $qdCount = $header['qdcount'];
+        $anCount = $header['ancount'];
+        $nsCount = $header['nscount'];
+        $arCount = $header['arcount'];
 
-        return pack(
-            'nnnnnn',
-            $this->id,
-            $flags,
-            $this->countQuestions(),
-            $this->countAnswers(),
-            $this->countAuthoritatives(),
-            $this->countAdditionals()
-        );
+        $message->setId($header['id']);
+        $message->setResponse((bool) ($flags >> 15 & 0x1));
+        $message->setOpcode($flags >> 11 & 0xf);
+        $message->setAuthoritative((bool) ($flags >> 10 & 0x1));
+        $message->setTruncated((bool) ($flags >> 9 & 0x1));
+        $message->setRecursionDesired((bool) ($flags >> 8 & 0x1));
+        $message->setRecursionAvailable((bool) ($flags >> 7 & 0x1));
+        $message->setZ($flags >> 4 & 0x7);
+        $message->setRcode($flags & 0xf);
+
+        for ($i = 0; $i < $qdCount; ++$i) {
+            $message->addQuestion(Question::fromWire($encoded, $offset));
+        }
+
+        for ($i = 0; $i < $anCount; ++$i) {
+            $message->addAnswer(ResourceRecord::fromWire($encoded, $offset));
+        }
+
+        for ($i = 0; $i < $nsCount; ++$i) {
+            $message->addAuthoritative(ResourceRecord::fromWire($encoded, $offset));
+        }
+
+        for ($i = 0; $i < $arCount; ++$i) {
+            $message->addAdditional(ResourceRecord::fromWire($encoded, $offset));
+        }
+
+        return $message;
     }
 }

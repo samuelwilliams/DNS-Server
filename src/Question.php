@@ -19,6 +19,7 @@ use Badcow\DNS\Rdata\Types;
 use Badcow\DNS\Rdata\UnsupportedTypeException;
 use Badcow\DNS\Validator;
 use InvalidArgumentException;
+use UnexpectedValueException;
 
 class Question
 {
@@ -111,5 +112,26 @@ class Question
     public function toWire(): string
     {
         return RdataTrait::encodeName($this->name).pack('nn', $this->type, $this->class);
+    }
+
+    /**
+     * @param string $encoded
+     * @param int    $offset
+     *
+     * @return Question
+     *
+     * @throws UnexpectedValueException
+     * @throws UnsupportedTypeException
+     */
+    public static function fromWire(string $encoded, int &$offset = 0): Question
+    {
+        $question = new self();
+        $question->setName(RdataTrait::decodeName($encoded, $offset));
+        $integers = unpack('ntype/nclass', $encoded, $offset);
+        $question->setType($integers['type']);
+        $question->setClass($integers['class']);
+        $offset += 4;
+
+        return $question;
     }
 }
